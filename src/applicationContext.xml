@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd"
+	xmlns:tx="http://www.springframework.org/schema/tx">
+
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+		p:location="classpath:jdbc.properties" p:fileEncoding="utf-8" />
+
+	<bean id="dataSource"
+		class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+		<property name="user" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect </prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<!-- <prop key="hibernate.connection.username">root</prop> <prop key="hibernate.connection.password">123456</prop> 
+					<prop key="hibernate.connection.url">jdbc:mysql://localhost:3306/ssh</prop> -->
+				<prop key="hibernate.default_batch_fetch_size">30</prop>
+			</props>
+		</property>
+		<property name="packagesToScan">
+			<list>
+				<value>com.codewen</value>
+			</list>
+		</property>
+		<property name="mappingResources">
+			<list>
+				<value>com/codewen/entity/User.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<tx:annotation-driven
+		transaction-manager="transactionManager" />
+
+	<bean id="UserAction" class="com.codewen.action.UserAction"
+		scope="prototype">
+		<property name="UserService" ref="UserService"></property>
+	</bean>
+
+	<bean id="UserDao" class="com.codewen.dao.UserDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<bean id="UserService" class="com.codewen.service.UserService">
+		<property name="UserDao" ref="UserDao"></property>
+	</bean>
+
+</beans>
